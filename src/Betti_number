@@ -1,3 +1,37 @@
 import qiskit as qk
+import pandas as pd
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+import numpy as np
+from itertools import combinations
+from pprint import pprint
 
-def S_matrix(r)
+def create_s_matrix(protein):
+    pass
+
+df = pd.read_csv("Example/vibrio_vulnificus.csv", sep=",")
+vec = df["n_atom"].to_numpy()[:5]
+
+combs = {}
+for r in [2,3]:
+    combs[r] = list(combinations(vec,r))
+
+
+
+S = np.zeros((len(combs[3]),len(combs[2])))
+
+for i,three_simp in enumerate(combs[3]):
+    for j,two_simp in enumerate(combs[2]):
+        if two_simp[0] in three_simp and two_simp[1] in three_simp:
+            S[i,j] = 1
+
+print(S)
+
+#fig = plt.figure()
+#ax = fig.add_subplot(111, projection="3d")
+#ax.scatter(df["x"], df["y"], df["z"], c="blue", s=40)
+
+#ax.set_xlabel("X")
+#ax.set_ylabel("Y")
+#ax.set_zlabel("Z")
+#plt.show()

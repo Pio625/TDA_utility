@@ -9,29 +9,48 @@ from pprint import pprint
 def create_s_matrix(protein):
     pass
 
-df = pd.read_csv("Example/vibrio_vulnificus.csv", sep=",")
-vec = df["n_atom"].to_numpy()[:5]
-
-combs = {}
-for r in [2,3]:
-    combs[r] = list(combinations(vec,r))
+df = pd.read_csv("Example/vibrio_vulnificus.csv", sep=",", usecols=["x", "y","z"])
+vec = df["n_atom"].to_numpy()
 
 
+def generate_s_matrix(vertices, r):
+    """
+    Generate the S matrix (boundary matrix) for r-simplices.
+    
+    Parameters:
+    vertices: list, tuple, or np.array of vertices
+    r: dimension of the simplices
+    
+    Returns:
+    S: boundary matrix as numpy array
+    row_labels: list of r-simplices (row indices)
+    col_labels: list of (r-1)-simplices (column indices)
+    """
+    
+    # Convert to sorted list of vertices
+    vertices = sorted(list(vertices))
+    
+    # Generate all combinations for r and r-1 simplices
+    r_simplices = list(combinations(vertices, r + 1))
+    r_minus_one_simplices = list(combinations(vertices, r))
+    
+    # Create mapping dictionaries
+    row_dict = {simp: i for i, simp in enumerate(r_simplices)}
+    col_dict = {simp: i for i, simp in enumerate(r_minus_one_simplices)}
+    
+    # Initialize S matrix
+    S = np.zeros((len(r_simplices), len(r_minus_one_simplices)), dtype=int)
+    
+    # Fill S matrix
+    for i, r_simp in enumerate(r_simplices):
+        for pos in range(len(r_simp)):
+            # Remove vertex at position pos
+            face = r_simp[:pos] + r_simp[pos+1:]
+            if face in col_dict:
+                S[i, col_dict[face]] = (-1) ** pos
+    
+    return S, r_simplices, r_minus_one_simplices
 
-S = np.zeros((len(combs[3]),len(combs[2])))
+S_2=generate_s_matrix(vec,2)
 
-for i,three_simp in enumerate(combs[3]):
-    for j,two_simp in enumerate(combs[2]):
-        if two_simp[0] in three_simp and two_simp[1] in three_simp:
-            S[i,j] = 1
-
-print(S)
-
-#fig = plt.figure()
-#ax = fig.add_subplot(111, projection="3d")
-#ax.scatter(df["x"], df["y"], df["z"], c="blue", s=40)
-
-#ax.set_xlabel("X")
-#ax.set_ylabel("Y")
-#ax.set_zlabel("Z")
-#plt.show()
+print(S_2)
